@@ -1,65 +1,75 @@
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
 local autoWeave = false
 local blinking = false
 
--- Function to toggle auto weave
+-- Forward declare functions
+local startBlinking
+local stopBlinking
+
+-- Toggle function
 local function toggleAutoWeave()
-    autoWeave = not autoWeave
-    if autoWeave then
-        print("Auto Weave: ON")
-        startBlinking()
-    else
-        print("Auto Weave: OFF")
-        stopBlinking()
-    end
+	autoWeave = not autoWeave
+	if autoWeave then
+		print("Auto Weave: ON")
+		startBlinking()
+	else
+		print("Auto Weave: OFF")
+		stopBlinking()
+	end
 end
 
--- Bind 'T' to toggle auto weave
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.T then
-        toggleAutoWeave()
-    end
-end)
-
 -- Function to start blinking
-local function startBlinking()
-    if blinking then return end
-    blinking = true
-    spawn(function()
-        local character = localPlayer.Character
-        if not character then return end
-        local parts = {}
-        for _, part in pairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                table.insert(parts, part)
-            end
-        end
-        while blinking do
-            for _, part in pairs(parts) do
-                part.Transparency = 1
-            end
-            wait(0.1)
-            for _, part in pairs(parts) do
-                part.Transparency = 0
-            end
-            wait(0.1)
-        end
-    end)
+startBlinking = function()
+	if blinking then return end
+	blinking = true
+	task.spawn(function()
+		while blinking do
+			local character = localPlayer.Character
+			if character then
+				for _, part in pairs(character:GetChildren()) do
+					if part:IsA("BasePart") then
+						part.Transparency = 1
+					end
+				end
+				task.wait(0.1)
+				for _, part in pairs(character:GetChildren()) do
+					if part:IsA("BasePart") then
+						part.Transparency = 0
+					end
+				end
+			end
+			task.wait(0.1)
+		end
+	end)
 end
 
 -- Function to stop blinking
-local function stopBlinking()
-    blinking = false
-    local character = localPlayer.Character
-    if not character then return end
-    for _, part in pairs(character:GetChildren()) do
-        if part:IsA("BasePart") then
-            part.Transparency = 0
-        end
-    end
+stopBlinking = function()
+	blinking = false
+	local character = localPlayer.Character
+	if not character then return end
+	for _, part in pairs(character:GetChildren()) do
+		if part:IsA("BasePart") then
+			part.Transparency = 0
+		end
+	end
 end
+
+-- Keybind to toggle auto weave (T key)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.T then
+		toggleAutoWeave()
+	end
+end)
+
+-- Reapply blinking when respawning
+localPlayer.CharacterAdded:Connect(function()
+	if autoWeave then
+		task.wait(1) -- wait for character to load
+		startBlinking()
+	end
+end)
