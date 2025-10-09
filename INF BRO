@@ -1,32 +1,74 @@
--- AutoWeave JSON-Integrated Toggle
--- Press T to toggle ON/OFF
--- Updates the CG_AutoWeave field in a simulated JSON config
-
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
 
--- Simulate the executor JSON config
-local Config = {
-    CG_AutoWeave = false,                  -- main toggle
-    CG_AutoWeave_LegitMode = false,        -- optional
-    CG_AutoWeave_ActivationDelay = 0       -- changed to 0
-}
+-- Configuration
+local WEAVE_DURATION = 1.8 -- seconds, duration of the weave frame
+local WEAVE_COOLDOWN = 0.2 -- time between weave frames
+local WEAVE_KEY = Enum.KeyCode.Space -- key to hold for weaving
+local WEAVE_DIRECTIONS = {Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D}
 
--- Function to toggle AutoWeave
-local function toggleAutoWeave()
-    Config.CG_AutoWeave = not Config.CG_AutoWeave
-    print("[CG_AutoWeave] " .. (Config.CG_AutoWeave and "ENABLED" or "DISABLED"))
+local weaving = false
+local weaveStartTime = 0
+local currentDirection = Enum.KeyCode.W
+
+-- Function to simulate key press and hold
+local function startWeave(direction)
+    weaving = true
+    weaveStartTime = tick()
+    currentDirection = direction
+    
+    -- Press and hold direction key + spacebar
+    UserInputService:SetKeyDown(WEAVE_KEY)
+    UserInputService:SetKeyDown(direction)
 end
 
--- Input listener for the toggle key
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.T then
-        toggleAutoWeave()
+local function stopWeave()
+    weaving = false
+    UserInputService:SetKeyUp(WEAVE_KEY)
+    UserInputService:SetKeyUp(currentDirection)
+end
+
+-- Auto weave loop
+spawn(function()
+    while true do
+        if not weaving then
+            -- Pick a direction to weave (you can customize to your preference)
+            local dir = WEAVE_DIRECTIONS[math.random(1,#WEAVE_DIRECTIONS)]
+            startWeave(dir)
+        else
+            -- Check if weave frame duration expired
+            if tick() - weaveStartTime >= WEAVE_DURATION then
+                stopWeave()
+                wait(WEAVE_COOLDOWN)
+            end
+        end
+        RunService.Heartbeat:Wait()
     end
 end)
 
--- Heartbeat loop to keep the global variable updated
--- This simulates the executor exposing the toggle globally
-RunService.Heartbeat:Connect(function()
-    _G.CG_AutoWeave = Config.CG_AutoWeave
+-- Listen for incoming attack events to trigger weave dodge frame
+-- NOTE: You must replace this with the actual event or method Fight in a School uses to signal an incoming attack
+local function onIncomingAttack()
+    if weaving and tick() - weaveStartTime <= WEAVE_DURATION then
+        -- Weave the attack here
+        -- This may include playing an animation or sending a signal to stun the attacker
+        -- Example: play weave dodge animation or fire remote event
+        print("Attack weaved! Dodging and stunning attacker.")
+    end
+end
+
+-- Example connection to a remote event or bind the function to the appropriate signal
+-- Replace 'IncomingAttackEvent' with actual event from Fight in a School
+-- local IncomingAttackEvent = game.ReplicatedStorage:WaitForChild("IncomingAttackEvent")
+-- IncomingAttackEvent.OnClientEvent:Connect(onIncomingAttack)
+
+-- For demo/testing, simulate incoming attack every 5 seconds
+-- Remove this in production
+spawn(function()
+    while true do
+        wait(5)
+        onIncomingAttack()
+    end
 end)
