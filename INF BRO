@@ -1,87 +1,35 @@
+--[[ 
+AutoWeave Toggle Script
+Mimics CG_AutoWeave behavior without moving the character
+Press T to toggle ON/OFF
+]]
+
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
 
-local autoWeave = false
-local blinking = false
-local character
+-- SETTINGS
+local TOGGLE_KEY = Enum.KeyCode.T
 
--- Function to update character reference
-local function onCharacterAdded(char)
-    character = char
-end
+-- STATE
+local AutoWeaveEnabled = false
 
--- Connect to CharacterAdded to keep reference updated
-localPlayer.CharacterAdded:Connect(onCharacterAdded)
-
--- Initialize character if already loaded
-if localPlayer.Character then
-    character = localPlayer.Character
-else
-    -- Wait for character to load if not present
-    localPlayer.CharacterAdded:Wait()
-    character = localPlayer.Character
-end
-
--- Function to toggle auto weave
+-- TOGGLE FUNCTION
 local function toggleAutoWeave()
-    autoWeave = not autoWeave
-    if autoWeave then
-        print("Auto Weave: ON")
-        startBlinking()
-    else
-        print("Auto Weave: OFF")
-        stopBlinking()
-    end
+    AutoWeaveEnabled = not AutoWeaveEnabled
+    print("[AutoWeave] " .. (AutoWeaveEnabled and "ENABLED" or "DISABLED"))
 end
 
--- Bind 'T' to toggle auto weave
+-- INPUT LISTENER
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.T then
+    if not gameProcessed and input.KeyCode == TOGGLE_KEY then
         toggleAutoWeave()
     end
 end)
 
--- Function to start blinking
-local function startBlinking()
-    if blinking then return end
-    blinking = true
-    spawn(function()
-        local parts = {}
-        if not character then return end
-        for _, part in pairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                table.insert(parts, part)
-            end
-        end
-        while blinking do
-            -- Make parts transparent
-            for _, part in pairs(parts) do
-                if part and part.Parent then
-                    part.Transparency = 1
-                end
-            end
-            wait(0.1)
-            -- Revert transparency
-            for _, part in pairs(parts) do
-                if part and part.Parent then
-                    part.Transparency = 0
-                end
-            end
-            wait(0.1)
-        end
-    end)
-end
+-- OPTIONAL: expose AutoWeave state to other scripts
+-- For example, another script can check AutoWeaveEnabled
+_G.CG_AutoWeave = AutoWeaveEnabled
 
--- Function to stop blinking
-local function stopBlinking()
-    blinking = false
-    if not character then return end
-    for _, part in pairs(character:GetChildren()) do
-        if part:IsA("BasePart") then
-            part.Transparency = 0
-        end
-    end
-end
+-- HEARTBEAT LOOP to keep _G.CG_AutoWeave updated
+game:GetService("RunService").Heartbeat:Connect(function()
+    _G.CG_AutoWeave = AutoWeaveEnabled
+end)
