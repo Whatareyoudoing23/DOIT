@@ -1,35 +1,32 @@
---[[ 
-AutoWeave Toggle Script
-Mimics CG_AutoWeave behavior without moving the character
-Press T to toggle ON/OFF
-]]
+-- AutoWeave JSON-Integrated Toggle
+-- Press T to toggle ON/OFF
+-- Updates the CG_AutoWeave field in a simulated JSON config
 
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
--- SETTINGS
-local TOGGLE_KEY = Enum.KeyCode.T
+-- Simulate the executor JSON config
+local Config = {
+    CG_AutoWeave = false,                  -- main toggle
+    CG_AutoWeave_LegitMode = false,        -- optional
+    CG_AutoWeave_ActivationDelay = 0       -- changed to 0
+}
 
--- STATE
-local AutoWeaveEnabled = false
-
--- TOGGLE FUNCTION
+-- Function to toggle AutoWeave
 local function toggleAutoWeave()
-    AutoWeaveEnabled = not AutoWeaveEnabled
-    print("[AutoWeave] " .. (AutoWeaveEnabled and "ENABLED" or "DISABLED"))
+    Config.CG_AutoWeave = not Config.CG_AutoWeave
+    print("[CG_AutoWeave] " .. (Config.CG_AutoWeave and "ENABLED" or "DISABLED"))
 end
 
--- INPUT LISTENER
+-- Input listener for the toggle key
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == TOGGLE_KEY then
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.T then
         toggleAutoWeave()
     end
 end)
 
--- OPTIONAL: expose AutoWeave state to other scripts
--- For example, another script can check AutoWeaveEnabled
-_G.CG_AutoWeave = AutoWeaveEnabled
-
--- HEARTBEAT LOOP to keep _G.CG_AutoWeave updated
-game:GetService("RunService").Heartbeat:Connect(function()
-    _G.CG_AutoWeave = AutoWeaveEnabled
+-- Heartbeat loop to keep the global variable updated
+-- This simulates the executor exposing the toggle globally
+RunService.Heartbeat:Connect(function()
+    _G.CG_AutoWeave = Config.CG_AutoWeave
 end)
