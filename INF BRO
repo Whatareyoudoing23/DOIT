@@ -5,7 +5,7 @@ local RunService = game:GetService("RunService")
 -- Whitelist table with UserIds
 local Whitelist = {
     2744508863,
-    ,
+    
 }
 
 local player = Players.LocalPlayer
