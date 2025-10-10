@@ -1,74 +1,106 @@
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local player = game.Players.LocalPlayer
+
+-- Whitelist table with UserIds
+local Whitelist = {
+    123456789,
+    987654321,
+}
+
+local player = Players.LocalPlayer
+local isWhitelisted = false
+
+-- Check if the player is whitelisted
+for _, userId in ipairs(Whitelist) do
+    if player.UserId == userId then
+        isWhitelisted = true
+        break
+    end
+end
+
+-- Disconnect non-whitelisted players
+if not isWhitelisted then
+    player:Kick("You are not whitelisted. Contact the developer to be whitelisted.")
+    return -- Stop script execution for non-whitelisted players
+end
+
+-- Auto-weave configuration
+local CG_AutoWeave = true
+local CG_AutoWeave_ActivationDelay = 0.022
+local WeaveKey = Enum.KeyCode.T
+local FistToolName = "Fist"
+
 local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local isWeaving = CG_AutoWeave
+local lastWeaveTime = 0
 
--- Configuration
-local WEAVE_DURATION = 1.8 -- seconds, duration of the weave frame
-local WEAVE_COOLDOWN = 0.2 -- time between weave frames
-local WEAVE_KEY = Enum.KeyCode.Space -- key to hold for weaving
-local WEAVE_DIRECTIONS = {Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D}
-
-local weaving = false
-local weaveStartTime = 0
-local currentDirection = Enum.KeyCode.W
-
--- Function to simulate key press and hold
-local function startWeave(direction)
-    weaving = true
-    weaveStartTime = tick()
-    currentDirection = direction
-    
-    -- Press and hold direction key + spacebar
-    UserInputService:SetKeyDown(WEAVE_KEY)
-    UserInputService:SetKeyDown(direction)
+-- Check if the "Fist" tool is equipped
+local function areFistsEquipped()
+    local equippedTool = character:FindFirstChildOfClass("Tool")
+    return equippedTool and equippedTool.Name == FistToolName
 end
 
-local function stopWeave()
-    weaving = false
-    UserInputService:SetKeyUp(WEAVE_KEY)
-    UserInputService:SetKeyUp(currentDirection)
+-- Perform the weave movement
+local function performWeave(deltaTime)
+    if not isWeaving or not character or not humanoid or humanoid.Health <= 0 or not areFistsEquipped() then
+        return
+    end
+
+    lastWeaveTime = lastWeaveTime + deltaTime
+    if lastWeaveTime < CG_AutoWeave_ActivationDelay then
+        return
+    end
+    lastWeaveTime = 0
+
+    local offsetAmplitude = 0.5
+    local randomOffset = Vector3.new(
+        math.random(-offsetAmplitude, offsetAmplitude),
+        0,
+        math.random(-offsetAmplitude, offsetAmplitude)
+    )
+
+    rootPart.CFrame = CFrame.new(rootPart.Position + randomOffset) * rootPart.CFrame.Rotation
 end
 
--- Auto weave loop
-spawn(function()
-    while true do
-        if not weaving then
-            -- Pick a direction to weave (you can customize to your preference)
-            local dir = WEAVE_DIRECTIONS[math.random(1,#WEAVE_DIRECTIONS)]
-            startWeave(dir)
-        else
-            -- Check if weave frame duration expired
-            if tick() - weaveStartTime >= WEAVE_DURATION then
-                stopWeave()
-                wait(WEAVE_COOLDOWN)
-            end
-        end
-        RunService.Heartbeat:Wait()
+-- Toggle weaving with the specified key
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then
+        return
+    end
+
+    if input.KeyCode == WeaveKey then
+        isWeaving = not isWeaving
     end
 end)
 
--- Listen for incoming attack events to trigger weave dodge frame
--- NOTE: You must replace this with the actual event or method Fight in a School uses to signal an incoming attack
-local function onIncomingAttack()
-    if weaving and tick() - weaveStartTime <= WEAVE_DURATION then
-        -- Weave the attack here
-        -- This may include playing an animation or sending a signal to stun the attacker
-        -- Example: play weave dodge animation or fire remote event
-        print("Attack weaved! Dodging and stunning attacker.")
+-- Update weaving every frame
+RunService.Heartbeat:Connect(function(deltaTime)
+    if isWeaving and areFistsEquipped() then
+        performWeave(deltaTime)
     end
-end
+end)
 
--- Example connection to a remote event or bind the function to the appropriate signal
--- Replace 'IncomingAttackEvent' with actual event from Fight in a School
--- local IncomingAttackEvent = game.ReplicatedStorage:WaitForChild("IncomingAttackEvent")
--- IncomingAttackEvent.OnClientEvent:Connect(onIncomingAttack)
+-- Handle character respawn
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoid = character:WaitForChild("Humanoid")
+    rootPart = character:WaitForChild("HumanoidRootPart")
+    isWeaving = CG_AutoWeave
+    lastWeaveTime = 0
+end)
 
--- For demo/testing, simulate incoming attack every 5 seconds
--- Remove this in production
-spawn(function()
-    while true do
-        wait(5)
-        onIncomingAttack()
+-- Handle tool equip/unequip (optional, currently empty)
+player.Character.ChildAdded:Connect(function(child)
+    if child:IsA("Tool") and child.Name == FistToolName and isWeaving then
+        -- Add logic here if needed (e.g., notify player or enable weaving)
+    end
+end)
+
+player.Character.ChildRemoved:Connect(function(child)
+    if child:IsA("Tool") and child.Name == FistToolName then
+        -- Add logic here if needed (e.g., disable weaving)
     end
 end)
