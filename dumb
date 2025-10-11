@@ -1,95 +1,64 @@
--- Wait for the game to load
-repeat
-    task.wait()
-until game:IsLoaded()
+repeat task.wait() until game:IsLoaded()
 
--- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
--- Check if the game is "Fight in a School"
+local LocalPlayer = Players.LocalPlayer
+
 local PlaceName = MarketplaceService:GetProductInfo(game.PlaceId).Name
 if not PlaceName:lower():find("fight in a school") then
-    warn("This script only supports 'Fight in a School'.")
-    return
+    error("This script only works in 'Fight in a School'!")
 end
 
--- Load Rayfield UI Library (assumes Rayfield is available)
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
-local Window = Rayfield:CreateWindow({
-    Name = "Autoweave for Fight in a School",
-    LoadingTitle = "Autoweave Script",
-    LoadingSubtitle = "by xAI Assistant",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "Pathos/Autoweave",
-        FileName = "AutoweaveConfig"
-    }
-})
+local AutoweaveRemote = ReplicatedStorage:WaitForChild("Autoweave", 5)
+local AutoweaveEnabled = false
 
--- Create Combat Tab
-local CombatTab = Window:CreateTab("Combat", nil)
-
--- Find Autoweave RemoteEvent
-local AutoweaveRemote = ReplicatedStorage:FindFirstChild("Autoweave")
-
--- Create Toggle for Autoweave
-local AutoweaveToggle = CombatTab:CreateToggle({
-    Name = "Autoweave",
-    CurrentValue = false,
-    Flag = "Autoweave",
-    Callback = function(value)
-        if not AutoweaveRemote then
-            Rayfield:Notify({
-                Title = "Autoweave Error",
-                Content = "Autoweave RemoteEvent not found!",
-                Duration = 3,
-                Image = nil
-            })
-            AutoweaveToggle:Set(false) -- Disable toggle if RemoteEvent is missing
-            return
-        end
-
-        -- Fire the Autoweave RemoteEvent with true (enable) or false (disable)
-        AutoweaveRemote:FireServer(value)
-
-        -- Notify user of status
-        Rayfield:Notify({
-            Title = "Autoweave",
-            Content = value and "ENABLED" or "DISABLED",
-            Duration = 2,
-            Image = nil
-        })
-    end
-})
-
--- Initial check for RemoteEvent
 if not AutoweaveRemote then
-    Rayfield:Notify({
-        Title = "Autoweave Warning",
-        Content = "Autoweave RemoteEvent not found in ReplicatedStorage. Feature may not work.",
-        Duration = 5,
-        Image = nil
-    })
+    warn("Autoweave RemoteEvent not found! Check console for alternatives.")
+    for _, obj in pairs(ReplicatedStorage:GetChildren()) do
+        if obj:IsA("RemoteEvent") and (obj.Name:lower():find("weave") or obj.Name:lower():find("auto")) then
+            print("Possible RemoteEvent match: " .. obj.Name)
+        end
+    end
+else
+    print("Autoweave RemoteEvent found! Press T to toggle.")
 end
 
--- Anti-AFK (optional, to prevent being kicked for inactivity)
+local function ToggleAutoweave(value)
+    if not AutoweaveRemote then
+        warn("Cannot toggle: Autoweave RemoteEvent missing!")
+        return
+    end
+    AutoweaveRemote:FireServer(value)
+    AutoweaveEnabled = value
+    print("Autoweave " .. (value and "ENABLED" or "DISABLED"))
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == Enum.KeyCode.T then
+        ToggleAutoweave(not AutoweaveEnabled)
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    if AutoweaveEnabled and AutoweaveRemote then
+        ToggleAutoweave(true)
+        print("Autoweave re-enabled after respawn.")
+    end
+end)
+
 spawn(function()
     while true do
         task.wait(60)
-        LocalPlayer.Character.Humanoid.Jump = true
-        task.wait(0.1)
-        LocalPlayer.Character.Humanoid.Jump = false
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.Jump = true
+            task.wait(0.1)
+            LocalPlayer.Character.Humanoid.Jump = false
+        end
     end
 end)
 
--- Handle character reset or death
-LocalPlayer.CharacterAdded:Connect(function(character)
-    LocalPlayer.Character = character
-    -- Re-apply Autoweave if toggle is enabled
-    if AutoweaveToggle.CurrentValue and AutoweaveRemote then
-        AutoweaveRemote:FireServer(true)
-    end
-end)
+print("Autoweave Script Loaded! Press T to toggle Autoweave.")
