@@ -1,220 +1,94 @@
-----------------------------------------------------------------------------------------------------
--- Universal Script Hub (USF)
--- Created by MoofyWTF
--- Version: 1.0
-----------------------------------------------------------------------------------------------------
+-- Fight in a School AutoWeave Script (Minimalist)
+-- Features: AutoWeave (dodge around nearest enemy)
+-- Toggle: Press T
+-- Use at own risk!
 
-local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Configuration
+-- Config
 local Config = {
-    ToggleKey = Enum.KeyCode.Insert,  -- Key to toggle the GUI
-    Theme = "Dark",  -- Default theme
-    Scripts = {}  -- Loaded scripts will be stored here
+    WeaveSpeed = 16,  -- Dodge speed (higher = faster)
+    WeaveDistance = 5,  -- Side-to-side distance
+    Range = 20,  -- Max distance to target enemy
+    Enabled = false
 }
 
--- GUI Creation
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local TitleBar = Instance.new("Frame")
-local TitleLabel = Instance.new("TextLabel")
-local CloseButton = Instance.new("TextButton")
-local TabFrame = Instance.new("Frame")
-local ScriptList = Instance.new("ScrollingFrame")
-local LoadButton = Instance.new("TextButton")
-local ClearButton = Instance.new("TextButton")
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local RootPart = Character:WaitForChild("HumanoidRootPart")
 
--- Setup GUI
-ScreenGui.Name = "UniversalScriptHub"
-ScreenGui.Parent = PlayerGui
-ScreenGui.ResetOnSpawn = false
-
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.Active = true
-MainFrame.Draggable = true
-
-TitleBar.Name = "TitleBar"
-TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-TitleBar.BorderSizePixel = 0
-TitleBar.Size = UDim2.new(1, 0, 0, 30)
-
-TitleLabel.Name = "TitleLabel"
-TitleLabel.Parent = TitleBar
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Position = UDim2.new(0, 10, 0, 0)
-TitleLabel.Size = UDim2.new(1, -50, 1, 0)
-TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.Text = "Universal Script Hub"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 16
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-CloseButton.Name = "CloseButton"
-CloseButton.Parent = TitleBar
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-CloseButton.BorderSizePixel = 0
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.Size = UDim2.new(0, 30, 1, 0)
-CloseButton.Font = Enum.Font.SourceSans
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 14
-
-TabFrame.Name = "TabFrame"
-TabFrame.Parent = MainFrame
-TabFrame.BackgroundTransparency = 1
-TabFrame.Position = UDim2.new(0, 0, 0, 30)
-TabFrame.Size = UDim2.new(1, 0, 0, 40)
-
--- Placeholder for tabs (Scripts, Settings, etc.)
-local ScriptsTab = Instance.new("TextButton")
-ScriptsTab.Name = "ScriptsTab"
-ScriptsTab.Parent = TabFrame
-ScriptsTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-ScriptsTab.BorderSizePixel = 0
-ScriptsTab.Position = UDim2.new(0, 0, 0, 0)
-ScriptsTab.Size = UDim2.new(0.5, 0, 1, 0)
-ScriptsTab.Font = Enum.Font.SourceSans
-ScriptsTab.Text = "Scripts"
-ScriptsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-ScriptsTab.TextSize = 14
-
-local SettingsTab = Instance.new("TextButton")
-SettingsTab.Name = "SettingsTab"
-SettingsTab.Parent = TabFrame
-SettingsTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-SettingsTab.BorderSizePixel = 0
-SettingsTab.Position = UDim2.new(0.5, 0, 0, 0)
-SettingsTab.Size = UDim2.new(0.5, 0, 1, 0)
-SettingsTab.Font = Enum.Font.SourceSans
-SettingsTab.Text = "Settings"
-SettingsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-SettingsTab.TextSize = 14
-
-ScriptList.Name = "ScriptList"
-ScriptList.Parent = MainFrame
-ScriptList.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-ScriptList.BorderSizePixel = 0
-ScriptList.Position = UDim2.new(0, 0, 0, 70)
-ScriptList.Size = UDim2.new(1, 0, 1, -110)
-ScriptList.ScrollBarThickness = 8
-
--- UI List Layout for ScriptList
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Parent = ScriptList
-ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ListLayout.Padding = UDim.new(0, 5)
-
-LoadButton.Name = "LoadButton"
-LoadButton.Parent = MainFrame
-LoadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-LoadButton.BorderSizePixel = 0
-LoadButton.Position = UDim2.new(0, 10, 1, -40)
-LoadButton.Size = UDim2.new(0.45, 0, 0, 30)
-LoadButton.Font = Enum.Font.SourceSansBold
-LoadButton.Text = "Load Script"
-LoadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoadButton.TextSize = 14
-
-ClearButton.Name = "ClearButton"
-ClearButton.Parent = MainFrame
-ClearButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-ClearButton.BorderSizePixel = 0
-ClearButton.Position = UDim2.new(0.55, 0, 1, -40)
-ClearButton.Size = UDim2.new(0.45, 0, 0, 30)
-ClearButton.Font = Enum.Font.SourceSansBold
-ClearButton.Text = "Clear All"
-ClearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ClearButton.TextSize = 14
-
--- Toggle GUI Function
-local Visible = false
-local function ToggleGUI()
-    Visible = not Visible
-    MainFrame.Visible = Visible
-end
-
--- Bind Toggle Key
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Config.ToggleKey then
-        ToggleGUI()
-    end
-end)
-
--- Close Button
-CloseButton.MouseButton1Click:Connect(ToggleGUI)
-
--- Tab Switching (Basic)
-local currentTab = ScriptList
-ScriptsTab.MouseButton1Click:Connect(function()
-    ScriptList.Visible = true
-    -- Hide other tabs
-    currentTab = ScriptList
-end)
-
-SettingsTab.MouseButton1Click:Connect(function()
-    ScriptList.Visible = false
-    -- Show settings panel (placeholder)
-    currentTab = "Settings"
-end)
-
--- Script Loading Function
-local function AddScript(name, scriptCode)
-    local ScriptButton = Instance.new("TextButton")
-    ScriptButton.Name = name
-    ScriptButton.Parent = ScriptList
-    ScriptButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    ScriptButton.BorderSizePixel = 0
-    ScriptButton.Size = UDim2.new(1, -20, 0, 30)
-    ScriptButton.Font = Enum.Font.SourceSans
-    ScriptButton.Text = name
-    ScriptButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ScriptButton.TextSize = 12
-    ScriptButton.LayoutOrder = #Config.Scripts + 1
-
-    ScriptButton.MouseButton1Click:Connect(function()
-        loadstring(scriptCode)()
-    end)
-
-    table.insert(Config.Scripts, {name = name, code = scriptCode})
-    ScriptList.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
-end
-
--- Load Button (Placeholder for loading external scripts via textbox or predefined)
-LoadButton.MouseButton1Click:Connect(function()
-    -- Example: Prompt for script URL or code
-    -- For demo, add a sample script
-    AddScript("Sample Script", [[print("Hello from Universal Script Hub!")]])
-end)
-
--- Clear All Scripts
-ClearButton.MouseButton1Click:Connect(function()
-    for _, child in pairs(ScriptList:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
+-- Find Nearest Enemy
+local function GetNearestEnemy()
+    local nearest, dist = nil, math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local distance = (RootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+            if distance < dist then
+                nearest = player
+                dist = distance
+            end
         end
     end
-    Config.Scripts = {}
-    ScriptList.CanvasSize = UDim2.new(0, 0, 0, 0)
+    return nearest
+end
+
+-- AutoWeave Loop
+local weaveConnection
+local function StartAutoWeave()
+    if Config.Enabled then
+        weaveConnection = RunService.Heartbeat:Connect(function()
+            local target = GetNearestEnemy()
+            if target and target.Character and (RootPart.Position - target.Character.HumanoidRootPart.Position).Magnitude <= Config.Range then
+                -- Weave: Side-to-side movement (sin wave for dodge)
+                local time = tick()
+                local offset = math.sin(time * Config.WeaveSpeed) * Config.WeaveDistance
+                local targetPos = target.Character.HumanoidRootPart.Position
+                local weavePos = Vector3.new(targetPos.X + offset, targetPos.Y, targetPos.Z - 5)  -- Circle behind-ish
+                
+                -- Apply BodyVelocity for smooth weave
+                local bv = RootPart:FindFirstChild("WeaveBV") or Instance.new("BodyVelocity")
+                bv.Name = "WeaveBV"
+                bv.MaxForce = Vector3.new(4000, 0, 4000)
+                bv.Velocity = (weavePos - RootPart.Position).Unit * 50  -- Move to weave point
+                bv.Parent = RootPart
+            else
+                -- No target: Stop weave
+                if RootPart:FindFirstChild("WeaveBV") then
+                    RootPart.WeaveBV:Destroy()
+                end
+            end
+        end)
+    else
+        if weaveConnection then
+            weaveConnection:Disconnect()
+            weaveConnection = nil
+        end
+        if RootPart:FindFirstChild("WeaveBV") then
+            RootPart.WeaveBV:Destroy()
+        end
+    end
+end
+
+-- Toggle
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.T then
+        Config.Enabled = not Config.Enabled
+        StartAutoWeave()
+        print("AutoWeave " .. (Config.Enabled and "ON" or "OFF"))
+    end
 end)
 
--- Initialize GUI (Hidden)
-MainFrame.Visible = false
+-- Reconnect on Respawn
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+    Character = newChar
+    RootPart = Character:WaitForChild("HumanoidRootPart")
+    if Config.Enabled then
+        wait(1)
+        StartAutoWeave()
+    end
+end)
 
--- Auto-load some common scripts (optional, for demo)
--- AddScript("Infinite Yield", game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))
--- Note: Uncomment and add real URLs for actual functionality
-
-print("Universal Script Hub loaded! Press Insert to toggle.")
-
-----------------------------------------------------------------------------------------------------
+print("AutoWeave Loaded! Press T to toggle.")
