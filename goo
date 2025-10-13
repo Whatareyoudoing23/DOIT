@@ -1,0 +1,340 @@
+local animationsData = {
+    uzi = "rbxassetid://85034347911052",
+    slate = "rbxassetid://120763222024641",
+    homelander = "rbxassetid://91657032965298",
+    running = "rbxassetid://18954159936",
+    rko = "rbxassetid://18681913411",
+    dropKick = "rbxassetid://18955887114",
+    ATRAINSHOVE = "rbxassetid://137207806794364",
+    lean = "rbxassetid://17704531001",
+    takeTheL = "rbxassetid://119797830122478",
+    muscleFlex = "rbxassetid://83146673889164",
+    sturdy = "rbxassetid://117042914260311",
+    rockstar = "rbxassetid://90702983698946",
+    bigDawg = "rbxassetid://17740594848",
+    pointing = "rbxassetid://109022328569818",
+    carti = "rbxassetid://108806651344521",
+    twerk = "rbxassetid://12874447851",
+    rizz = "rbxassetid://13694096724",
+    freakIt = "rbxassetid://11444443576",
+    breakDown = "rbxassetid://10214311282",
+    chilling = "rbxassetid://72183601488494",
+    vibing = "rbxassetid://129993522134701",
+    exumShuffle = "rbxassetid://120976231005418",
+    windmill = "rbxassetid://124610310313589",
+    hitman = "rbxassetid://99355713422022",
+    philly = "rbxassetid://18312327728",
+    SAVAGE = "rbxassetid://18954941999",
+    BOSTAFF = "rbxassetid://103404842885572",
+    CRASHOUT = "rbxassetid://18727687046",
+    JEETKUNDO = "rbxassetid://94215703960724",
+    HAWK = "rbxassetid://111586898444697",
+    TRUCK = "rbxassetid://101722801377520",
+    flyingKNEE = "rbxassetid://121728603397386",
+    COMPOUND1 = "rbxassetid://18449063041",
+    COMPOUND2 = "rbxassetid://18449117161",
+    compoundV = "rbxassetid://18449056925",
+    SUPERMAN = "rbxassetid://132748833449150",
+    GAY = "rbxassetid://16874472321",
+    DADDY = "rbxassetid://14548621256",
+    BACKFLIP = "rbxassetid://15693621070",
+    GOOFYAH = "rbxassetid://18665811005",
+    SPLIT = "rbxassetid://10714390497",
+    DINGLEBERRY = "rbxassetid://14901306096",
+    CLAP = "rbxassetid://18855531354",
+    WORLD = "rbxassetid://18855536648",
+    ZESTY = "rbxassetid://14901308987",
+    STAR = "rbxassetid://13520524517",
+    BurBerry = "rbxassetid://10714007154",
+    FANCY = "rbxassetid://16270690701",
+    BlackPink = "rbxassetid://16553164850",
+    Eenie Meenie Chicago Dance = "89766566657110",
+    Chicago Footwork = "131063946105601",
+    HandShake = "rbxassetid://71243990877913"
+
+}
+
+-- Define the blacklist here. Add the UserIds of players you want to blacklist.
+local blacklistedUserIds = {
+    -- Example: 3967814486, -- Replace with actual user IDs
+    -- 7611496325,
+       8350093898
+}
+
+local player = game.Players.LocalPlayer
+
+-- Check if the player is blacklisted
+local isBlacklisted = false
+for _, userId in ipairs(blacklistedUserIds) do
+    if player.UserId == userId then
+        isBlacklisted = true
+        break
+    end
+end
+
+-- If blacklisted, disable GUI and stop script functionality
+if isBlacklisted then
+    -- Attempt to create a simple client-side message.
+    -- Executor capabilities can vary, so this might need adjustment.
+    local messageGui = Instance.new("ScreenGui")
+    messageGui.Parent = player:WaitForChild("PlayerGui")
+    messageGui.ResetOnSpawn = false
+
+    local messageLabel = Instance.new("TextLabel")
+    messageLabel.Size = UDim2.new(0, 400, 0, 50)
+    messageLabel.Position = UDim2.new(0.5, -200, 0.5, -25)
+    messageLabel.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    messageLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    messageLabel.TextSize = 20
+    messageLabel.Font = Enum.Font.GothamBold
+    messageLabel.Text = "You have been blacklisted from using this script."
+    messageLabel.Parent = messageGui
+
+    local messageCorner = Instance.new("UICorner")
+    messageCorner.CornerRadius = UDim.new(0, 8)
+    messageCorner.Parent = messageLabel
+
+    -- To simulate a "kick" experience on the client, you can try to
+    -- disconnect the player's character or render them immobile.
+    -- This is highly dependent on executor functions and game specifics.
+    -- A safer and more reliable approach is to simply disable the script's features.
+
+    -- Disable the main script's functionality by destroying it.
+    -- This prevents the GUI from being created and animations from being loaded/played.
+    script:Destroy()
+
+    -- Exit the script execution immediately.
+    return
+end
+
+-- If not blacklisted, continue with the rest of the script
+
+-- Create GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 260, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Visible = false
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5) -- Center the frame
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
+
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 100)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
+}
+gradient.Rotation = 45
+gradient.Parent = mainFrame
+
+local title = Instance.new("TextLabel")
+title.Text = "Mercys Animations"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Parent = mainFrame
+
+local searchBox = Instance.new("TextBox")
+searchBox.PlaceholderText = "Search animations..."
+searchBox.Font = Enum.Font.Gotham
+searchBox.TextSize = 16
+searchBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+searchBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+searchBox.Size = UDim2.new(1, -20, 0, 30)
+searchBox.Position = UDim2.new(0, 10, 0, 50)
+searchBox.Parent = mainFrame
+
+local searchButton = Instance.new("TextButton")
+searchButton.Text = "Search"
+searchButton.Font = Enum.Font.GothamBold
+searchButton.TextSize = 16
+searchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+searchButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+searchButton.Size = UDim2.new(0, 80, 0, 30)
+searchButton.Position = UDim2.new(1, -90, 0, 50)
+searchButton.Parent = mainFrame
+
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -20, 1, -130)
+scrollFrame.Position = UDim2.new(0, 10, 0, 90)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #animationsData * 50)
+scrollFrame.ScrollBarThickness = 6
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.Parent = mainFrame
+scrollFrame.Visible = false
+
+-- Animation Speed Controls
+local speedBox = Instance.new("TextBox")
+speedBox.PlaceholderText = "Enter animation speed"
+speedBox.Font = Enum.Font.Gotham
+speedBox.TextSize = 14
+speedBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+speedBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+speedBox.Size = UDim2.new(0.6, -20, 0, 30)
+speedBox.Position = UDim2.new(0, 10, 1, -40)
+speedBox.Parent = mainFrame
+
+local setSpeedButton = Instance.new("TextButton")
+setSpeedButton.Text = "Set Speed"
+setSpeedButton.Font = Enum.Font.GothamBold
+setSpeedButton.TextSize = 12
+setSpeedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+setSpeedButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+setSpeedButton.Size = UDim2.new(0.4, -10, 0, 30)
+setSpeedButton.Position = UDim2.new(1, -120, 1, -40)
+setSpeedButton.Parent = mainFrame
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Text = "Toggle Animations"
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 16
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Size = UDim2.new(0, 200, 0, 40)
+toggleButton.Position = UDim2.new(0.5, -100, 0, 10)
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+toggleButton.Parent = screenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 8)
+toggleCorner.Parent = toggleButton
+
+-- Pop-up animation function
+local function animateFrame(frame, targetVisible)
+    local tweenService = game:GetService("TweenService")
+    local startSize = frame.Size
+    local startPosition = frame.Position
+
+    local targetSize = UDim2.new(0, 260, 0, 400)
+    local targetPosition = UDim2.new(0.5, -130, 0.5, -200)
+
+    if targetVisible then
+        frame.Size = UDim2.new(0, 0, 0, 0)
+        frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    else
+        targetSize = UDim2.new(0, 0, 0, 0)
+        targetPosition = UDim2.new(0.5, 0, 0.5, 0)
+    end
+
+    local tweenInfo = TweenInfo.new(
+        0.5, -- Time
+        Enum.EasingStyle.Back, -- Easing style
+        Enum.EasingDirection.Out, -- Easing direction
+        0, -- Repeat count
+        false, -- Reverses
+        0 -- Delay time
+    )
+
+    local sizeTween = tweenService:Create(frame, tweenInfo, {Size = targetSize})
+    local positionTween = tweenService:Create(frame, tweenInfo, {Position = targetPosition})
+
+    frame.Visible = true
+    sizeTween:Play()
+    positionTween:Play()
+
+    sizeTween.Completed:Connect(function()
+        if not targetVisible then
+            frame.Visible = false
+            frame.Size = startSize
+            frame.Position = startPosition
+        end
+    end)
+end
+
+local animations = {}
+
+local function loadAnimations(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    for name, id in pairs(animationsData) do
+        local animation = Instance.new("Animation")
+        animation.AnimationId = id
+        animations[name] = humanoid:LoadAnimation(animation)
+        animations[name].Looped = true
+    end
+end
+
+loadAnimations(player.Character or player.CharacterAdded:Wait())
+player.CharacterAdded:Connect(loadAnimations)
+
+local function toggleAnimation(animationName)
+    local animationTrack = animations[animationName]
+    if animationTrack.IsPlaying then
+        animationTrack:Stop()
+    else
+        for _, anim in pairs(animations) do
+            anim:Stop()
+        end
+        animationTrack:Play()
+    end
+end
+
+local buttons = {}
+
+local function updateButtons(searchFilter)
+    for _, button in pairs(buttons) do
+        button:Destroy()
+    end
+    buttons = {}
+
+    local yOffset = 0
+    for name, _ in pairs(animationsData) do
+        if not searchFilter or name:lower():find(searchFilter:lower()) then
+            local button = Instance.new("TextButton")
+            button.Text = name .. " Animation"
+            button.Font = Enum.Font.GothamBold
+            button.TextSize = 14
+            button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            button.Size = UDim2.new(1, 0, 0, 40)
+            button.Position = UDim2.new(0, 0, 0, yOffset)
+            button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+            button.Parent = scrollFrame
+
+            local btnCorner = Instance.new("UICorner")
+            btnCorner.CornerRadius = UDim.new(0, 8)
+            btnCorner.Parent = button
+
+            button.MouseButton1Click:Connect(function()
+                toggleAnimation(name)
+            end)
+
+            yOffset = yOffset + 50
+            table.insert(buttons, button)
+        end
+    end
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, yOffset)
+end
+
+searchButton.MouseButton1Click:Connect(function()
+    scrollFrame.Visible = true
+    updateButtons(searchBox.Text)
+end)
+
+toggleButton.MouseButton1Click:Connect(function()
+    local targetVisibility = not mainFrame.Visible
+    animateFrame(mainFrame, targetVisibility)
+end)
+
+-- Apply Animation Speed
+setSpeedButton.MouseButton1Click:Connect(function()
+    local speed = tonumber(speedBox.Text)
+    if speed then
+        for _, animationTrack in pairs(animations) do
+            animationTrack:AdjustSpeed(speed)
+        end
+    else
+        print("Invalid speed")
+        -- Optionally, display an error message to the user
+    end
+end)
+
+updateButtons()
