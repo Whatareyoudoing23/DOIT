@@ -73,7 +73,7 @@ SizeSlider.BorderSizePixel = 0
 
 -- Apply Button
 local ApplyButton = Instance.new("TextButton", MainFrame)
-ApplyButton.Text = "become the next nuk"
+ApplyButton.Text = "Submit"
 ApplyButton.Size = UDim2.new(0, 280, 0, 30)
 ApplyButton.Position = UDim2.new(0, 10, 0, 140)
 ApplyButton.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
