@@ -4,7 +4,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Whitelist of allowed UserIds
 local Whitelist = {
-    9744028684, -- Add UserId here
+    2744508863, -- Add UserId here
     2744508863, -- Add another UserId here
     -- Add more UserIds as needed
 }
